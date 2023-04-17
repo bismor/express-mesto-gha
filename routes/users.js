@@ -1,19 +1,8 @@
-const router = require('express').Router();
-const {userSchema} = require('../models/card.js');
+const router = require('express').Router()
+const {getUsers, createUser, getUserById} = require('../controllers/users')
 
-router.get('/users', (req, res) => {
-  res.send(users);
-})
-
-router.get('/users/:id', (req, res) => {
-  const { id } = req.params;
-
-  if (!users[id]) {
-    res.send({ error: 'Такого пользователя нет' });
-    return;
-  }
-
-  res.send(users[id]);
-});
+router.get ('/:id', getUsers)
+router.get ('/', getUserById)
+router.post ('/', createUser)
 
 module.exports = router;
