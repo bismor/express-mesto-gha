@@ -1,8 +1,0 @@
-.popup__picture {
-  position: absolute;
-  background-color: white;
-  display: flex;
-  flex-direction: column;
-  background: none;
-  gap: 10px;
-}
