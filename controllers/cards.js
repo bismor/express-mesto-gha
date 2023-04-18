@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 const card = require('../models/card');
 
 module.exports.getCards = (req, res) => {
@@ -22,3 +23,15 @@ module.exports.deleteCardById = (req, res) => {
     .then((deleteCard) => res.send({ data: deleteCard }))
     .catch((err) => res.status(500).send(err.message));
 };
+
+module.exports.likeCard = (req, res) => card.findByIdAndUpdate(
+  req.params.cardId,
+  { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
+  { new: true },
+);
+
+module.exports.dislikeCard = (req, res) => card.findByIdAndUpdate(
+  req.params.cardId,
+  { $pull: { likes: req.user._id } }, // убрать _id из массива
+  { new: true },
+);
