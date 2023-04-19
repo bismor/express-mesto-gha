@@ -53,6 +53,13 @@ module.exports.createUser = async (req, res) => {
 };
 
 module.exports.getUserById = async (req, res) => {
+  if (!isValidIbOjectId(req.params.userId)) {
+    res
+      .status(HTTP_STATUS_CODE.BAD_REQUEST)
+      .send({ message: 'Передан неккоректный ID пользователя' });
+    return;
+  }
+
   try {
     const data = await user.findById(req.params.userId);
     if (data === null) {
