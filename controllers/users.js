@@ -3,6 +3,13 @@ const HTTP_STATUS_CODE = require('../utils/http-status-code');
 const { isValidIbOjectId } = require('../utils/utils');
 
 module.exports.getUsers = async (req, res) => {
+  if (!isValidIbOjectId(req.user._id)) {
+    res
+      .status(HTTP_STATUS_CODE.UNAUTHORIZED)
+      .send({ message: 'Передан неккоректный ID пользователя' });
+    return;
+  }
+
   try {
     const data = await user.find({});
     res.status(HTTP_STATUS_CODE.OK)
