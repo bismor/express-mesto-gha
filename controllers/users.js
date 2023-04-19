@@ -32,10 +32,10 @@ module.exports.createUser = async (req, res) => {
     return;
   }
 
-  if (typeof about !== 'string') {
+  if (typeof about !== 'string' || name.length < 2 || name.length > 30) {
     res.status(HTTP_STATUS_CODE.BAD_REQUEST)
       .send({
-        message: 'Поле "about" должно быть строкой',
+        message: 'Поле "about" должно быть строкой с минимальной длинной 2 смвола и максимально 30',
       });
     return;
   }
