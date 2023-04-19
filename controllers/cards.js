@@ -44,8 +44,15 @@ module.exports.createCard = async (req, res) => {
 };
 
 module.exports.deleteCardById = async (req, res) => {
+  if (!isValidIbOjectId(req.params.cardId)) {
+    res
+      .status(HTTP_STATUS_CODE.BAD_REQUEST)
+      .send({ message: 'Передан неккоректный ID карточки' });
+    return;
+  }
+
   try {
-    const data = await card.findByIdAndRemove(req.params._id);
+    const data = await card.findByIdAndRemove(req.params.cardId);
 
     if (data === null) {
       res
@@ -53,7 +60,7 @@ module.exports.deleteCardById = async (req, res) => {
         .send({ message: 'Передан _id несуществующей карточки' });
       return;
     }
-    res.status(HTTP_STATUS_CODE.NO_CONTENT)
+    res.status(HTTP_STATUS_CODE.OK)
       .send();
   } catch (error) {
     res
@@ -91,8 +98,8 @@ module.exports.likeCard = async (req, res) => {
       return;
     }
 
-    res.status(HTTP_STATUS_CODE.NO_CONTENT)
-      .send();
+    res.status(HTTP_STATUS_CODE.OK)
+      .send({ data });
   } catch (error) {
     res
       .status(HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR)
@@ -129,8 +136,8 @@ module.exports.dislikeCard = async (req, res) => {
       return;
     }
 
-    res.status(HTTP_STATUS_CODE.NO_CONTENT)
-      .send();
+    res.status(HTTP_STATUS_CODE.OK)
+      .send({ data });
   } catch (error) {
     res
       .status(HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR)
