@@ -1,35 +1,110 @@
 const user = require('../models/user');
+const HTTP_STATUS_CODE = require('../utils/http-status-code');
+const { isValidIbOjectId } = require('../utils/utils');
 
-module.exports.getUsers = (req, res) => {
-  user.find({})
-    .then((users) => res.send({ data: users }))
-    .catch((err) => res.status(500).send(err.message));
+module.exports.getUsers = async (req, res) => {
+  try {
+    const data = await user.find({});
+    res.status(HTTP_STATUS_CODE.OK)
+      .send({ data });
+  } catch (error) {
+    res.status(HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR)
+      .send({ message: 'INTERNAL_SERVER_ERROR' });
+  }
 };
 
 module.exports.createUser = (req, res) => {
   const { name, about, avatar } = req.body;
 
-  user.create({ name, about, avatar })
-    .then((newUser) => res.send({ data: newUser }))
-    .catch((err) => res.status(500).send(err.message));
+  if (typeof name !== 'string' || name.length < 2 || name.length > 30) {
+    res
+      .status(HTTP_STATUS_CODE.BAD_REQUEST)
+      .send({
+        message: 'Поле "name" должно быть строкой с минимальной длинной 2 смвола и максимально 30',
+      });
+    return;
+  }
+
+  if (typeof about !== 'string') {
+    res.status(HTTP_STATUS_CODE.BAD_REQUEST)
+      .send({
+        message: 'Поле "about" должно быть строкой',
+      });
+    return;
+  }
+
+  if (typeof avatar !== 'string') {
+    res.status(HTTP_STATUS_CODE.BAD_REQUEST)
+      .send({
+        message: 'Поле "avatar" должно быть строкой',
+      });
+    return;
+  }
+  user.create({ name, about, avatar });
 };
 
-module.exports.getUserById = (req, res) => {
-  user.findById(req.params._id)
-    .then((getUser) => res.send({ data: getUser }))
-    .catch((err) => res.status(500).send(err.message));
+module.exports.getUserById = async (req, res) => {
+  try {
+    const data = await user.findById(req.params._id);
+    if (data === null) {
+      res
+        .status(HTTP_STATUS_CODE.NOT_FOUND)
+        .send({ message: 'Передан _id несуществующего пользователя' });
+      return;
+    }
+  } catch (error) {
+    res
+      .status(HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR)
+      .send({ message: 'INTERNAL_SERVER_ERROR' });
+  }
 };
 
-module.exports.updateProfile = (req, res) => {
+module.exports.updateProfile = async (req, res) => {
+  if (!isValidIbOjectId(req.user._id)) {
+    res
+      .status(HTTP_STATUS_CODE.BAD_REQUEST)
+      .send({ message: 'Передан неккоректный ID пользователя' });
+    return;
+  }
+
   const { name, about } = req.body;
-  user.findByIdAndUpdate(req.user._id, { name, about }, { new: true })
-    .then((updateUser) => res.send({ data: updateUser }))
-    .catch((err) => res.status(500).send(err.message));
+
+  try {
+    const data = await user.findByIdAndUpdate(req.user._id, { name, about }, { new: true });
+    if (data === null) {
+      res
+        .status(HTTP_STATUS_CODE.NOT_FOUND)
+        .send({ message: 'Передан _id несуществующего пользователя' });
+      return;
+    }
+  } catch (error) {
+    res
+      .status(HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR)
+      .send({ message: 'INTERNAL_SERVER_ERROR' });
+  }
 };
 
-module.exports.updateAvatar = (req, res) => {
+module.exports.updateAvatar = async (req, res) => {
+  if (!isValidIbOjectId(req.user._id)) {
+    res
+      .status(HTTP_STATUS_CODE.BAD_REQUEST)
+      .send({ message: 'Передан неккоректный ID пользователя' });
+    return;
+  }
+
   const { avatar } = req.body;
-  user.findByIdAndUpdate(req.user._id, { avatar }, { new: true })
-    .then((updateAvatar) => res.send({ data: updateAvatar }))
-    .catch((err) => res.status(500).send(err.message));
+
+  try {
+    const data = await user.findByIdAndUpdate(req.user._id, { avatar }, { new: true });
+    if (data === null) {
+      res
+        .status(HTTP_STATUS_CODE.NOT_FOUND)
+        .send({ message: 'Передан _id несуществующего пользователя' });
+      return;
+    }
+  } catch (error) {
+    res
+      .status(HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR)
+      .send({ message: 'INTERNAL_SERVER_ERROR' });
+  }
 };

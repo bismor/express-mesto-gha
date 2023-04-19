@@ -1,6 +1,5 @@
 /* eslint-disable no-unused-vars */
 const card = require('../models/card');
-const HttpStatusCode = require('../utils/http-status-code');
 const HTTP_STATUS_CODE = require('../utils/http-status-code');
 const { isValidIbOjectId } = require('../utils/utils');
 
@@ -27,17 +26,21 @@ module.exports.createCard = async (req, res) => {
       .send({
         message: 'Поле "name" должно быть строкой с минимальной длинной 2 смвола и максимально 30',
       });
+    return;
   }
 
   if (typeof link !== 'string') {
-    res.status(HttpStatusCode.BAD_REQUEST)
+    res.status(HTTP_STATUS_CODE.BAD_REQUEST)
       .send({
         message: 'Поле "link" должно быть строкой',
       });
+    return;
   }
-  card.create({
+  const data = await card.create({
     name, link, owner: req.user._id,
   });
+  res.status(HTTP_STATUS_CODE.OK)
+    .send({ data });
 };
 
 module.exports.deleteCardById = async (req, res) => {
