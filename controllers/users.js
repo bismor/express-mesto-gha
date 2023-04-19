@@ -54,6 +54,8 @@ module.exports.getUserById = async (req, res) => {
         .send({ message: 'Передан _id несуществующего пользователя' });
       return;
     }
+    res.status(HTTP_STATUS_CODE.OK)
+      .send({ data });
   } catch (error) {
     res
       .status(HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR)
