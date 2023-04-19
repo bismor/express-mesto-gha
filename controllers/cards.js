@@ -1,5 +1,7 @@
 /* eslint-disable no-unused-vars */
 const card = require('../models/card');
+const HTTP_STATUS_CODE = require('../utils/http-status-code');
+const { isValidIbOjectId } = require('../utils/utils');
 
 module.exports.getCards = (req, res) => {
   card.find({})
@@ -12,26 +14,110 @@ module.exports.createCard = (req, res) => {
     name, link,
   } = req.body;
   card.create({
-    name, link,
+    name, link, owner: req.user._id,
   })
     .then((newCard) => res.send({ data: newCard }))
     .catch((err) => res.status(500).send(err.message));
 };
 
-module.exports.deleteCardById = (req, res) => {
-  card.findByIdAndRemove(req.params._id)
-    .then((deleteCard) => res.send({ data: deleteCard }))
-    .catch((err) => res.status(500).send(err.message));
+module.exports.deleteCardById = async (req, res) => {
+  if (!isValidIbOjectId(req.params.cardId)) {
+    res
+      .status(HTTP_STATUS_CODE.BAD_REQUEST)
+      .send({ message: 'Передан неккоректный ID карточки' });
+    return;
+  }
+
+  try {
+    const data = await card.findByIdAndRemove(req.params._id);
+
+    if (data === null) {
+      res
+        .status(HTTP_STATUS_CODE.NOT_FOUND)
+        .send({ message: 'Передан _id несуществующей карточки' });
+      return;
+    }
+    res.status(HTTP_STATUS_CODE.NO_CONTENT)
+      .send();
+  } catch (error) {
+    res
+      .status(HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR)
+      .send({ message: 'INTERNAL_SERVER_ERROR' });
+  }
 };
 
-module.exports.likeCard = (req, res) => card.findByIdAndUpdate(
-  req.params.cardId,
-  { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
-  { new: true },
-);
+module.exports.likeCard = async (req, res) => {
+  if (!isValidIbOjectId(req.params.cardId)) {
+    res
+      .status(HTTP_STATUS_CODE.BAD_REQUEST)
+      .send({ message: 'Передан неккоректный ID карточки' });
+    return;
+  }
 
-module.exports.dislikeCard = (req, res) => card.findByIdAndUpdate(
-  req.params.cardId,
-  { $pull: { likes: req.user._id } }, // убрать _id из массива
-  { new: true },
-);
+  if (!isValidIbOjectId(req.user._id)) {
+    res
+      .status(HTTP_STATUS_CODE.BAD_REQUEST)
+      .send({ message: 'Передан неккоректный ID пользователя' });
+    return;
+  }
+
+  try {
+    const data = await card.findByIdAndUpdate(
+      req.params.cardId,
+      { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
+      { new: true },
+    );
+
+    if (data === null) {
+      res
+        .status(HTTP_STATUS_CODE.NOT_FOUND)
+        .send({ message: 'Передан _id несуществующей карточки' });
+      return;
+    }
+
+    res.status(HTTP_STATUS_CODE.NO_CONTENT)
+      .send();
+  } catch (error) {
+    res
+      .status(HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR)
+      .send({ message: 'INTERNAL_SERVER_ERROR' });
+  }
+};
+
+module.exports.dislikeCard = async (req, res) => {
+  if (!isValidIbOjectId(req.params.cardId)) {
+    res
+      .status(HTTP_STATUS_CODE.BAD_REQUEST)
+      .send({ message: 'Передан неккоректный ID карточки' });
+    return;
+  }
+
+  if (!isValidIbOjectId(req.user._id)) {
+    res
+      .status(HTTP_STATUS_CODE.BAD_REQUEST)
+      .send({ message: 'Передан неккоректный ID пользователя' });
+    return;
+  }
+
+  try {
+    const data = await card.findByIdAndUpdate(
+      req.params.cardId,
+      { $pull: { likes: req.user._id } }, // убрать _id из массива
+      { new: true },
+    );
+
+    if (data === null) {
+      res
+        .status(HTTP_STATUS_CODE.NOT_FOUND)
+        .send({ message: 'Передан _id несуществующей карточки' });
+      return;
+    }
+
+    res.status(HTTP_STATUS_CODE.NO_CONTENT)
+      .send();
+  } catch (error) {
+    res
+      .status(HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR)
+      .send({ message: 'INTERNAL_SERVER_ERROR' });
+  }
+};
