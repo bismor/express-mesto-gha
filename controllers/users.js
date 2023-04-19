@@ -13,7 +13,7 @@ module.exports.getUsers = async (req, res) => {
   }
 };
 
-module.exports.createUser = (req, res) => {
+module.exports.createUser = async (req, res) => {
   const { name, about, avatar } = req.body;
 
   if (typeof name !== 'string' || name.length < 2 || name.length > 30) {
@@ -40,7 +40,9 @@ module.exports.createUser = (req, res) => {
       });
     return;
   }
-  user.create({ name, about, avatar });
+  const data = await user.create({ name, about, avatar });
+  res.status(HTTP_STATUS_CODE.OK)
+    .send({ data });
 };
 
 module.exports.getUserById = async (req, res) => {
