@@ -54,11 +54,11 @@ module.exports.createUser = async (req, res) => {
 
 module.exports.getUserById = async (req, res) => {
   try {
-    const data = await user.findById(req.params._id);
+    const data = await user.findById(req.params.userId);
     if (data === null) {
       res
         .status(HTTP_STATUS_CODE.NOT_FOUND)
-        .send({ message: 'Передан _id несуществующего пользователя' });
+        .send({ message: 'Передан "userId" несуществующего пользователя' });
       return;
     }
     res.status(HTTP_STATUS_CODE.OK)
