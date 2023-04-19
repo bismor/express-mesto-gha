@@ -1,33 +1,46 @@
 /* eslint-disable no-unused-vars */
 const card = require('../models/card');
+const HttpStatusCode = require('../utils/http-status-code');
 const HTTP_STATUS_CODE = require('../utils/http-status-code');
 const { isValidIbOjectId } = require('../utils/utils');
 
-module.exports.getCards = (req, res) => {
-  card.find({})
-    .then((allCards) => res.send({ data: allCards }))
-    .catch((err) => res.status(500).send(err.message));
+module.exports.getCards = async (req, res) => {
+  try {
+    const data = await card.find({});
+    res.status(HTTP_STATUS_CODE.OK)
+      .send({ data });
+  } catch (error) {
+    res
+      .status(HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR)
+      .send({ message: 'INTERNAL_SERVER_ERROR' });
+  }
 };
 
-module.exports.createCard = (req, res) => {
+module.exports.createCard = async (req, res) => {
   const {
     name, link,
   } = req.body;
+
+  if (typeof name !== 'string' || name.length < 2 || name.length > 30) {
+    res
+      .status(HTTP_STATUS_CODE.BAD_REQUEST)
+      .send({
+        message: 'Поле "name" должно быть строкой с минимальной длинной 2 смвола и максимально 30',
+      });
+  }
+
+  if (typeof link !== 'string') {
+    res.status(HttpStatusCode.BAD_REQUEST)
+      .send({
+        message: 'Поле "link" должно быть строкой',
+      });
+  }
   card.create({
     name, link, owner: req.user._id,
-  })
-    .then((newCard) => res.send({ data: newCard }))
-    .catch((err) => res.status(500).send(err.message));
+  });
 };
 
 module.exports.deleteCardById = async (req, res) => {
-  if (!isValidIbOjectId(req.params.cardId)) {
-    res
-      .status(HTTP_STATUS_CODE.BAD_REQUEST)
-      .send({ message: 'Передан неккоректный ID карточки' });
-    return;
-  }
-
   try {
     const data = await card.findByIdAndRemove(req.params._id);
 
