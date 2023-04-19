@@ -87,6 +87,23 @@ module.exports.updateProfile = async (req, res) => {
 
   const { name, about } = req.body;
 
+  if (typeof name !== 'string' || name.length <= 2 || name.length >= 30) {
+    res
+      .status(HTTP_STATUS_CODE.BAD_REQUEST)
+      .send({
+        message: 'Поле "name" должно быть строкой с минимальной длинной 2 смвола и максимально 30',
+      });
+    return;
+  }
+
+  if (typeof about !== 'string' || about.length <= 2 || about.length >= 30) {
+    res.status(HTTP_STATUS_CODE.BAD_REQUEST)
+      .send({
+        message: 'Поле "about" должно быть строкой с минимальной длинной 2 смвола и максимально 30',
+      });
+    return;
+  }
+
   try {
     const data = await user.findByIdAndUpdate(req.user._id, { name, about }, { new: true });
     if (data === null) {
@@ -111,6 +128,14 @@ module.exports.updateAvatar = async (req, res) => {
   }
 
   const { avatar } = req.body;
+
+  if (typeof avatar !== 'string') {
+    res.status(HTTP_STATUS_CODE.BAD_REQUEST)
+      .send({
+        message: 'Поле "avatar" должно быть строкой',
+      });
+    return;
+  }
 
   try {
     const data = await user.findByIdAndUpdate(req.user._id, { avatar }, { new: true });
