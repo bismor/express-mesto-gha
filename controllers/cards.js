@@ -11,7 +11,7 @@ module.exports.getCards = async (req, res) => {
   } catch (error) {
     res
       .status(HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR)
-      .send({ message: 'INTERNAL_SERVER_ERROR' });
+      .send({ message: 'На сервере произошла ошибка' });
   }
 };
 
@@ -65,7 +65,7 @@ module.exports.deleteCardById = async (req, res) => {
   } catch (error) {
     res
       .status(HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR)
-      .send({ message: 'INTERNAL_SERVER_ERROR' });
+      .send({ message: 'На сервере произошла ошибка' });
   }
 };
 
@@ -103,7 +103,7 @@ module.exports.likeCard = async (req, res) => {
   } catch (error) {
     res
       .status(HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR)
-      .send({ message: 'INTERNAL_SERVER_ERROR' });
+      .send({ message: 'На сервере произошла ошибка' });
   }
 };
 
@@ -141,6 +141,6 @@ module.exports.dislikeCard = async (req, res) => {
   } catch (error) {
     res
       .status(HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR)
-      .send({ message: 'INTERNAL_SERVER_ERROR' });
+      .send({ message: 'На сервере произошла ошибка' });
   }
 };

@@ -16,7 +16,7 @@ module.exports.getUsers = async (req, res) => {
       .send({ data });
   } catch (error) {
     res.status(HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR)
-      .send({ message: 'INTERNAL_SERVER_ERROR' });
+      .send({ message: 'На сервере произошла ошибка' });
   }
 };
 
@@ -73,7 +73,7 @@ module.exports.getUserById = async (req, res) => {
   } catch (error) {
     res
       .status(HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR)
-      .send({ message: 'INTERNAL_SERVER_ERROR' });
+      .send({ message: 'На сервере произошла ошибка' });
   }
 };
 
@@ -117,7 +117,7 @@ module.exports.updateProfile = async (req, res) => {
   } catch (error) {
     res
       .status(HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR)
-      .send({ message: 'INTERNAL_SERVER_ERROR' });
+      .send({ message: 'На сервере произошла ошибка' });
   }
 };
 
@@ -152,6 +152,6 @@ module.exports.updateAvatar = async (req, res) => {
   } catch (error) {
     res
       .status(HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR)
-      .send({ message: 'INTERNAL_SERVER_ERROR' });
+      .send({ message: 'На сервере произошла ошибка' });
   }
 };
