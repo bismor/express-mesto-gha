@@ -1,3 +1,4 @@
+const bcrypt = require('bcryptjs'); // импортируем bcrypt
 const user = require('../models/user');
 const HTTP_STATUS_CODE = require('../utils/http-status-code');
 const { isValidIbOjectId } = require('../utils/utils');
@@ -21,7 +22,9 @@ module.exports.getUsers = async (req, res) => {
 };
 
 module.exports.createUser = async (req, res) => {
-  const { name, about, avatar } = req.body;
+  const {
+    name, about, avatar,
+  } = req.body;
 
   if (typeof name !== 'string' || name.length <= 2 || name.length >= 30) {
     res
@@ -47,7 +50,14 @@ module.exports.createUser = async (req, res) => {
       });
     return;
   }
-  const data = await user.create({ name, about, avatar });
+  const data = await user.create({
+    name: "Жак-Ив Кусто", about: "Исследователь", avatar: "https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png",
+    bcrypt.hash(req.body.password, 10)
+    .then(hash => User.create({
+      email: req.body.email,
+      password: hash, // записываем хеш в базу
+    }))
+  });
   res.status(HTTP_STATUS_CODE.OK)
     .send({ data });
 };
