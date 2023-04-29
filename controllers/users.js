@@ -1,4 +1,5 @@
 const bcrypt = require('bcryptjs'); // импортируем bcrypt
+const jwt = require('jsonwebtoken');
 const user = require('../models/user');
 const HTTP_STATUS_CODE = require('../utils/http-status-code');
 const { isValidIbOjectId } = require('../utils/utils');
@@ -164,4 +165,39 @@ module.exports.updateAvatar = async (req, res) => {
       .status(HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR)
       .send({ message: 'На сервере произошла ошибка' });
   }
+};
+
+module.exports.login = (req, res) => {
+  const { email, password } = req.body;
+  user.findOne({ email })
+    .then((user) => {
+      if (!user) {
+        return Promise.reject(new Error('Неправильные почта или пароль'));
+      }
+
+      return bcrypt.compare(password, user.password);
+    })
+    .then((matched) => {
+      if (!matched) {
+        return Promise.reject(new Error('Неправильные почта или пароль'));
+      }
+      res.send({ message: 'Всё верно!' });
+    })
+    .catch((err) => {
+      res.status(401)
+        .send({ message: err.message });
+    });
+  return user.findUserByCredentials(email, password)
+    .then(() => {
+      // создадим токен
+      const token = jwt.sign({ _id: 'd285e3dceed844f902650f40' }, 'some-secret-key', { expiresIn: '7d' });
+
+      // вернём токен
+      res.send({ token });
+    })
+    .catch((err) => {
+      res
+        .status(401)
+        .send({ message: err.message });
+    });
 };
