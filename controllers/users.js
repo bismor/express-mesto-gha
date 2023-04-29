@@ -50,14 +50,14 @@ module.exports.createUser = async (req, res) => {
       });
     return;
   }
-  const data = await user.create({
-    name: "Жак-Ив Кусто", about: "Исследователь", avatar: "https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png",
-    bcrypt.hash(req.body.password, 10)
-    .then(hash => User.create({
-      email: req.body.email,
-      password: hash, // записываем хеш в базу
-    }))
-  });
+  const data = await bcrypt.hash(req.body.password, 10).then((hash) => user.create({
+    name: 'Жак-Ив Кусто',
+    about: 'Исследователь',
+    avatar: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
+
+    email: req.body.email,
+    password: hash, // записываем хеш в базу
+  }));
   res.status(HTTP_STATUS_CODE.OK)
     .send({ data });
 };
