@@ -50,18 +50,18 @@ module.exports.deleteCardById = async (req, res) => {
       .send({ message: 'Передан неккоректный ID карточки' });
     return;
   }
+  const userId = req.user._id;
 
   try {
-    const data = await card.findByIdAndRemove(req.params.cardId);
-
-    if (data === null) {
-      res
-        .status(HTTP_STATUS_CODE.NOT_FOUND)
-        .send({ message: 'Передан _id несуществующей карточки' });
+    const cardData = await card.findOneAndRemove({ _id: req.params.cardId, owner: userId });
+    if (cardData) {
+      res.status(HTTP_STATUS_CODE.OK).send({ data: cardData });
       return;
     }
-    res.status(HTTP_STATUS_CODE.OK)
-      .send({ data });
+    res
+      .status(HTTP_STATUS_CODE.NOT_FOUND)
+      .send({ message: 'Передан _id несуществующей карточки' });
+    return;
   } catch (error) {
     res
       .status(HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR)

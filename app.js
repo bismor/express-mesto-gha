@@ -2,7 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const path = require('path');
 const bodyParser = require('body-parser');
-
+const auth = require('./middlewares/auth');
 const HTTP_STATUS_CODE = require('./utils/http-status-code');
 
 const app = express();
@@ -14,7 +14,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/mestodb', {
 });
 
 app.use('/users', require('./routes/users'));
-app.use('/cards', require('./routes/cards'));
+app.use('/cards', auth, require('./routes/cards'));
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use((req, res) => {

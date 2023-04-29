@@ -167,37 +167,60 @@ module.exports.updateAvatar = async (req, res) => {
   }
 };
 
-module.exports.login = (req, res) => {
+module.exports.login = async (req, res) => {
   const { email, password } = req.body;
-  user.findOne({ email })
-    .then((userData) => {
-      if (!userData) {
-        return Promise.reject(new Error('Неправильные почта или пароль'));
-      }
 
-      return bcrypt.compare(password, userData.password);
-    })
-    .then((matched) => {
-      if (!matched) {
-        return Promise.reject(new Error('Неправильные почта или пароль'));
-      }
-      return res.send({ message: 'Всё верно!' });
-    })
-    .catch((err) => {
-      res.status(401)
-        .send({ message: err.message });
-    });
-  return user.findUserByCredentials(email, password)
-    .then(() => {
-      // создадим токен
-      const token = jwt.sign({ _id: 'd285e3dceed844f902650f40' }, 'some-secret-key', { expiresIn: '7d' });
+  if (!email || !password) {
+    return res.status(HTTP_STATUS_CODE.BAD_REQUEST)
+      .send('Поля "email" и "password" должны быть заполнены');
+  }
 
-      // вернём токен
-      res.send({ token });
-    })
-    .catch((err) => {
+  try {
+    const userData = await user.findOne({ email }).select('+password');
+
+    if (!userData) {
+      return res.status(HTTP_STATUS_CODE.BAD_REQUEST)
+        .send({ message: 'Неправильные почта или пароль' });
+    }
+
+    const isPasswordMatch = await bcrypt.compare(password, userData.password);
+
+    if (!isPasswordMatch) {
+      return res.status(HTTP_STATUS_CODE.BAD_REQUEST)
+        .send({ message: 'Неправильные почта или пароль' });
+    }
+
+    const token = jwt.sign({ _id: userData._id }, 'some-secret-key', { expiresIn: '7d' });
+
+    return res.status(HTTP_STATUS_CODE.OK).send({ token });
+  } catch (error) {
+    return res
+      .status(HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR)
+      .send({ message: 'На сервере произошла ошибка' });
+  }
+};
+
+module.exports.getProfile = async (req, res) => {
+  const userId = req.user._id;
+  if (!isValidIbOjectId(userId)) {
+    res
+      .status(HTTP_STATUS_CODE.BAD_REQUEST)
+      .send({ message: 'Передан неккоректный ID пользователя' });
+  }
+
+  try {
+    const data = await user.findById(userId);
+    if (data === null) {
       res
-        .status(401)
-        .send({ message: err.message });
-    });
+        .status(HTTP_STATUS_CODE.NOT_FOUND)
+        .send({ message: 'Передан "userId" несуществующего пользователя' });
+      return;
+    }
+    res.status(HTTP_STATUS_CODE.OK)
+      .send({ data });
+  } catch (error) {
+    res
+      .status(HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR)
+      .send({ message: 'На сервере произошла ошибка' });
+  }
 };
