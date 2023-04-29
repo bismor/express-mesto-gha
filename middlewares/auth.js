@@ -15,7 +15,7 @@ module.exports = (req, res, next) => {
   let payload;
 
   try {
-    const payload = jwt.verify(token, 'some-secret-key');
+    payload = jwt.verify(token, 'some-secret-key');
   } catch (err) {
     return res
       .status(401)
@@ -23,5 +23,5 @@ module.exports = (req, res, next) => {
   }
   req.user = payload; // записываем пейлоуд в объект запроса
 
-  next(); // пропускаем запрос дальше
+  return next(); // пропускаем запрос дальше
 };
