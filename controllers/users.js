@@ -3,13 +3,13 @@ const jwt = require('jsonwebtoken');
 const user = require('../models/user');
 const HTTP_STATUS_CODE = require('../utils/http-status-code');
 const { isValidIbOjectId } = require('../utils/utils');
+const BadRequestError = require('../errors/bad-request-err');
+const NotFoundError = require('../errors/not-found-err');
+const UnauthorizedError = require('../errors/unauthorized-err');
 
 module.exports.getUsers = async (req, res) => {
   if (!isValidIbOjectId(req.user._id)) {
-    res
-      .status(HTTP_STATUS_CODE.UNAUTHORIZED)
-      .send({ message: 'Передан неккоректный ID пользователя' });
-    return;
+    throw new UnauthorizedError('Передан неккоректный ID пользователя');
   }
 
   try {
@@ -28,28 +28,15 @@ module.exports.createUser = async (req, res) => {
   } = req.body;
 
   if (typeof name === 'string' && (name.length <= 2 || name.length >= 30)) {
-    res
-      .status(HTTP_STATUS_CODE.BAD_REQUEST)
-      .send({
-        message: 'Поле "name" должно быть строкой с минимальной длинной 2 смвола и максимально 30',
-      });
-    return;
+    throw new BadRequestError('Поле "name" должно быть строкой с минимальной длинной 2 смвола и максимально 30');
   }
 
   if (typeof about === 'string' && (about.length <= 2 || about.length >= 30)) {
-    res.status(HTTP_STATUS_CODE.BAD_REQUEST)
-      .send({
-        message: 'Поле "about" должно быть строкой с минимальной длинной 2 смвола и максимально 30',
-      });
-    return;
+    throw new BadRequestError('Поле "about" должно быть строкой с минимальной длинной 2 смвола и максимально 30');
   }
 
   if (typeof avatar === 'string') {
-    res.status(HTTP_STATUS_CODE.BAD_REQUEST)
-      .send({
-        message: 'Поле "avatar" должно быть строкой',
-      });
-    return;
+    throw new BadRequestError('Поле "avatar" должно быть строкой');
   }
   const data = await bcrypt.hash(req.body.password, 10).then((hash) => user.create({
     name,
@@ -65,19 +52,13 @@ module.exports.createUser = async (req, res) => {
 
 module.exports.getUserById = async (req, res) => {
   if (!isValidIbOjectId(req.params.userId)) {
-    res
-      .status(HTTP_STATUS_CODE.BAD_REQUEST)
-      .send({ message: 'Передан неккоректный ID пользователя' });
-    return;
+    throw new BadRequestError('Передан неккоректный ID пользователя');
   }
 
   try {
     const data = await user.findById(req.params.userId);
     if (data === null) {
-      res
-        .status(HTTP_STATUS_CODE.NOT_FOUND)
-        .send({ message: 'Передан "userId" несуществующего пользователя' });
-      return;
+      throw new NotFoundError('Передан "userId" несуществующего пользователя');
     }
     res.status(HTTP_STATUS_CODE.OK)
       .send({ data });
@@ -90,38 +71,23 @@ module.exports.getUserById = async (req, res) => {
 
 module.exports.updateProfile = async (req, res) => {
   if (!isValidIbOjectId(req.user._id)) {
-    res
-      .status(HTTP_STATUS_CODE.BAD_REQUEST)
-      .send({ message: 'Передан неккоректный ID пользователя' });
-    return;
+    throw new BadRequestError('Передан неккоректный ID пользователя');
   }
 
   const { name, about } = req.body;
 
   if (typeof name !== 'string' || name.length <= 2 || name.length >= 30) {
-    res
-      .status(HTTP_STATUS_CODE.BAD_REQUEST)
-      .send({
-        message: 'Поле "name" должно быть строкой с минимальной длинной 2 смвола и максимально 30',
-      });
-    return;
+    throw new BadRequestError('Поле "name" должно быть строкой с минимальной длинной 2 смвола и максимально 30');
   }
 
   if (typeof about !== 'string' || about.length <= 2 || about.length >= 30) {
-    res.status(HTTP_STATUS_CODE.BAD_REQUEST)
-      .send({
-        message: 'Поле "about" должно быть строкой с минимальной длинной 2 смвола и максимально 30',
-      });
-    return;
+    throw new BadRequestError('Поле "about" должно быть строкой с минимальной длинной 2 смвола и максимально 30');
   }
 
   try {
     const data = await user.findByIdAndUpdate(req.user._id, { name, about }, { new: true });
     if (data === null) {
-      res
-        .status(HTTP_STATUS_CODE.NOT_FOUND)
-        .send({ message: 'Передан _id несуществующего пользователя' });
-      return;
+      throw new NotFoundError('Передан "userId" несуществующего пользователя');
     }
     res.status(HTTP_STATUS_CODE.OK)
       .send({ data });
@@ -134,29 +100,19 @@ module.exports.updateProfile = async (req, res) => {
 
 module.exports.updateAvatar = async (req, res) => {
   if (!isValidIbOjectId(req.user._id)) {
-    res
-      .status(HTTP_STATUS_CODE.BAD_REQUEST)
-      .send({ message: 'Передан неккоректный ID пользователя' });
-    return;
+    throw new BadRequestError('Передан неккоректный ID пользователя');
   }
 
   const { avatar } = req.body;
 
   if (typeof avatar !== 'string') {
-    res.status(HTTP_STATUS_CODE.BAD_REQUEST)
-      .send({
-        message: 'Поле "avatar" должно быть строкой',
-      });
-    return;
+    throw new BadRequestError('Поле "avatar" должно быть строкой');
   }
 
   try {
     const data = await user.findByIdAndUpdate(req.user._id, { avatar }, { new: true });
     if (data === null) {
-      res
-        .status(HTTP_STATUS_CODE.NOT_FOUND)
-        .send({ message: 'Передан _id несуществующего пользователя' });
-      return;
+      throw new NotFoundError('Передан "_id" несуществующего пользователя');
     }
     res.status(HTTP_STATUS_CODE.OK)
       .send({ data });
@@ -171,23 +127,20 @@ module.exports.login = async (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    return res.status(HTTP_STATUS_CODE.BAD_REQUEST)
-      .send('Поля "email" и "password" должны быть заполнены');
+    throw new BadRequestError('Поля "email" и "password" должны быть заполнены');
   }
 
   try {
     const userData = await user.findOne({ email }).select('+password');
 
     if (!userData) {
-      return res.status(HTTP_STATUS_CODE.BAD_REQUEST)
-        .send({ message: 'Неправильные почта или пароль' });
+      throw new BadRequestError('Неправильные почта или пароль');
     }
 
     const isPasswordMatch = await bcrypt.compare(password, userData.password);
 
     if (!isPasswordMatch) {
-      return res.status(HTTP_STATUS_CODE.BAD_REQUEST)
-        .send({ message: 'Неправильные почта или пароль' });
+      throw new BadRequestError('Неправильные почта или пароль');
     }
 
     const token = jwt.sign({ _id: userData._id }, 'some-secret-key', { expiresIn: '7d' });
@@ -203,18 +156,13 @@ module.exports.login = async (req, res) => {
 module.exports.getProfile = async (req, res) => {
   const userId = req.user._id;
   if (!isValidIbOjectId(userId)) {
-    res
-      .status(HTTP_STATUS_CODE.BAD_REQUEST)
-      .send({ message: 'Передан неккоректный ID пользователя' });
+    throw new BadRequestError('Передан неккоректный ID пользователя');
   }
 
   try {
     const data = await user.findById(userId);
     if (data === null) {
-      res
-        .status(HTTP_STATUS_CODE.NOT_FOUND)
-        .send({ message: 'Передан "userId" несуществующего пользователя' });
-      return;
+      throw new NotFoundError('Передан "userId" несуществующего пользователя');
     }
     res.status(HTTP_STATUS_CODE.OK)
       .send({ data });
