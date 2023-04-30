@@ -18,15 +18,17 @@ app.use('/cards', auth, require('./routes/cards'));
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use((err, req, res, next) => {
-  const { statusCode = 500, message } = err;
-  res
-    .status(statusCode)
-    .send({
-      // проверяем статус и выставляем сообщение в зависимости от него
-      message: statusCode === 500
-        ? 'На сервере произошла ошибка'
-        : message,
-    });
+  if (err) {
+    const { statusCode = 500, message } = err;
+    res
+      .status(statusCode)
+      .send({
+        // проверяем статус и выставляем сообщение в зависимости от него
+        message: statusCode === 500
+          ? 'На сервере произошла ошибка'
+          : message,
+      });
+  } else { next(); }
 });
 
 app.listen(3000);
