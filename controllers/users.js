@@ -24,7 +24,7 @@ module.exports.getUsers = async (req, res) => {
 
 module.exports.createUser = async (req, res) => {
   const {
-    name, about, avatar,
+    name, about, avatar, email,
   } = req.body;
 
   if (typeof name === 'string' && (name.length <= 2 || name.length >= 30)) {
@@ -38,16 +38,29 @@ module.exports.createUser = async (req, res) => {
   if (typeof avatar === 'string') {
     throw new BadRequestError('Поле "avatar" должно быть строкой');
   }
-  const data = await bcrypt.hash(req.body.password, 10).then((hash) => user.create({
-    name,
-    about,
-    avatar,
 
-    email: req.body.email,
-    password: hash, // записываем хеш в базу
-  }));
-  res.status(HTTP_STATUS_CODE.OK)
-    .send({ data });
+  try {
+    const userEmail = await user.findOne({ email });
+    if (userEmail) {
+      res
+        .status(HTTP_STATUS_CODE.UNAUTHORIZED)
+        .send({ message: 'Такой email уже существует' });
+    }
+
+    const data = await bcrypt.hash(req.body.password, 10).then((hash) => user.create({
+      name,
+      about,
+      avatar,
+
+      email: req.body.email,
+      password: hash, // записываем хеш в базу
+    }));
+    res.status(HTTP_STATUS_CODE.OK).send({ data });
+  } catch (error) {
+    res
+      .status(HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR)
+      .send({ message: 'На сервере произошла ошибка' });
+  }
 };
 
 module.exports.getUserById = async (req, res) => {
