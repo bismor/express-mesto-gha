@@ -43,7 +43,7 @@ module.exports.createUser = async (req, res) => {
     const userEmail = await user.findOne({ email });
     if (userEmail) {
       res
-        .status(HTTP_STATUS_CODE.UNAUTHORIZED)
+        .status(HTTP_STATUS_CODE.CONFLICT)
         .send({ message: 'Такой email уже существует' });
     }
 
