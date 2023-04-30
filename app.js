@@ -18,10 +18,10 @@ app.use('/users', require('./routes/users'));
 app.use('/cards', auth, require('./routes/cards'));
 
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(errors());
 app.use((req, res) => {
   res.status(HTTP_STATUS_CODE.NOT_FOUND).send({ message: 'Not Found' });
 });
+app.use(errors());
 app.use((err, req, res, next) => {
   const { statusCode = 500, message } = err;
   if (err) {
