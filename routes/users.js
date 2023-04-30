@@ -11,6 +11,6 @@ router.patch('/me/avatar', auth, updateAvatar);
 router.post('/signin', login);
 router.post('/signup', createUser);
 router.get('/', auth, getUsers);
-router.get('/:userId', getUserById);
+router.get('/:userId', auth, getUserById);
 
 module.exports = router;
