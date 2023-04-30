@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const path = require('path');
 const bodyParser = require('body-parser');
 const auth = require('./middlewares/auth');
-const HTTP_STATUS_CODE = require('./utils/http-status-code');
+// const HTTP_STATUS_CODE = require('./utils/http-status-code');
 
 const app = express();
 app.use(bodyParser.json());
@@ -17,8 +17,8 @@ app.use('/users', require('./routes/users'));
 app.use('/cards', auth, require('./routes/cards'));
 
 app.use(express.static(path.join(__dirname, 'public')));
-app.use((req, res) => {
-  res.status(HTTP_STATUS_CODE.NOT_FOUND).send({ message: 'Not Found' });
+app.use((err, req, res, next) => {
+  res.status(err.statusCode).send({ message: err.message });
 });
 
 app.listen(3000);
