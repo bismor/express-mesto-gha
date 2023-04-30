@@ -27,15 +27,17 @@ module.exports.createUser = async (req, res, next) => {
       throw new ConflictError('Такой email уже существует');
     }
 
-    const data = await bcrypt.hash(req.body.password, 10).then((hash) => user.create({
+    const passwordHash = await bcrypt.hash(req.body.password, 10);
+    const userData = await user.create({
       name,
       about,
       avatar,
-
       email: req.body.email,
-      password: hash, // записываем хеш в базу
-    }));
-    res.status(HTTP_STATUS_CODE.OK).send({ data });
+      password: passwordHash, // записываем хеш в базу
+    });
+    const safeData = userData.toObject({ useProjection: true });
+
+    res.status(HTTP_STATUS_CODE.OK).send({ safeData });
   } catch (error) {
     next(error);
   }
