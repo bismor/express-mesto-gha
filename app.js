@@ -20,7 +20,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/mestodb', {
 
 app.post('/signin', celebrate({
   body: Joi.object().keys({
-    email: Joi.string().required(),
+    email: Joi.string().required().regex(/[a-z0-9]+@[a-z]+\.edu\.[a-z]{2,3}/),
     password: Joi.string().required(),
   }),
 }), login);
@@ -29,7 +29,7 @@ app.post('/signup', celebrate({
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
     avatar: Joi.string(),
-    email: Joi.string().required(),
+    email: Joi.string().required().regex(/[a-z0-9]+@[a-z]+\.edu\.[a-z]{2,3}/),
     password: Joi.string().required(),
   }),
 }), createUser);
