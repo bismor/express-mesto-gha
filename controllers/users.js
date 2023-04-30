@@ -2,17 +2,12 @@ const bcrypt = require('bcryptjs'); // импортируем bcrypt
 const jwt = require('jsonwebtoken');
 const user = require('../models/user');
 const HTTP_STATUS_CODE = require('../utils/http-status-code');
-const { isValidIbOjectId } = require('../utils/utils');
 const BadRequestError = require('../errors/bad-request-err');
 const NotFoundError = require('../errors/not-found-err');
 const ConflictError = require('../errors/conflict-err');
-const UnauthorizedError = require('../errors/unauthorized-err');
 
 module.exports.getUsers = async (req, res, next) => {
   try {
-    if (!isValidIbOjectId(req.user._id)) {
-      throw new UnauthorizedError('Передан неккоректный ID пользователя');
-    }
     const data = await user.find({});
     res.status(HTTP_STATUS_CODE.OK)
       .send({ data });
@@ -27,17 +22,6 @@ module.exports.createUser = async (req, res, next) => {
       name, about, avatar, email,
     } = req.body;
 
-    if (typeof name === 'string' && (name.length <= 2 || name.length >= 30)) {
-      throw new BadRequestError('Поле "name" должно быть строкой с минимальной длинной 2 смвола и максимально 30');
-    }
-
-    if (typeof about === 'string' && (about.length <= 2 || about.length >= 30)) {
-      throw new BadRequestError('Поле "about" должно быть строкой с минимальной длинной 2 смвола и максимально 30');
-    }
-
-    if (typeof avatar === 'string') {
-      throw new BadRequestError('Поле "avatar" должно быть строкой');
-    }
     const userEmail = await user.findOne({ email });
     if (userEmail) {
       throw new ConflictError('Такой email уже существует');
@@ -59,9 +43,6 @@ module.exports.createUser = async (req, res, next) => {
 
 module.exports.getUserById = async (req, res, next) => {
   try {
-    if (!isValidIbOjectId(req.params.userId)) {
-      throw new BadRequestError('Передан неккоректный ID пользователя');
-    }
     const data = await user.findById(req.params.userId);
     if (data === null) {
       throw new NotFoundError('Передан "userId" несуществующего пользователя');
@@ -75,19 +56,8 @@ module.exports.getUserById = async (req, res, next) => {
 
 module.exports.updateProfile = async (req, res, next) => {
   try {
-    if (!isValidIbOjectId(req.user._id)) {
-      throw new BadRequestError('Передан неккоректный ID пользователя');
-    }
-
     const { name, about } = req.body;
 
-    if (typeof name !== 'string' || name.length <= 2 || name.length >= 30) {
-      throw new BadRequestError('Поле "name" должно быть строкой с минимальной длинной 2 смвола и максимально 30');
-    }
-
-    if (typeof about !== 'string' || about.length <= 2 || about.length >= 30) {
-      throw new BadRequestError('Поле "about" должно быть строкой с минимальной длинной 2 смвола и максимально 30');
-    }
     const data = await user.findByIdAndUpdate(req.user._id, { name, about }, { new: true });
     if (data === null) {
       throw new NotFoundError('Передан "userId" несуществующего пользователя');
@@ -101,10 +71,6 @@ module.exports.updateProfile = async (req, res, next) => {
 
 module.exports.updateAvatar = async (req, res, next) => {
   try {
-    if (!isValidIbOjectId(req.user._id)) {
-      throw new BadRequestError('Передан неккоректный ID пользователя');
-    }
-
     const { avatar } = req.body;
 
     if (typeof avatar !== 'string') {
@@ -124,9 +90,6 @@ module.exports.updateAvatar = async (req, res, next) => {
 module.exports.login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
-    if (!email || !password) {
-      throw new BadRequestError('Поля "email" и "password" должны быть заполнены');
-    }
     const userData = await user.findOne({ email }).select('+password');
     const isPasswordMatch = await bcrypt.compare(password, userData.password);
 
@@ -145,9 +108,6 @@ module.exports.login = async (req, res, next) => {
 module.exports.getProfile = async (req, res, next) => {
   try {
     const userId = req.user._id;
-    if (!isValidIbOjectId(userId)) {
-      throw new BadRequestError('Передан неккоректный ID пользователя');
-    }
     const data = await user.findById(userId);
     if (data === null) {
       throw new NotFoundError('Передан "userId" несуществующего пользователя');
