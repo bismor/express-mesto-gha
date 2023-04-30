@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const path = require('path');
 const bodyParser = require('body-parser');
+const { errors } = require('celebrate');
 const auth = require('./middlewares/auth');
 // const HTTP_STATUS_CODE = require('./utils/http-status-code');
 
@@ -17,6 +18,7 @@ app.use('/users', require('./routes/users'));
 app.use('/cards', auth, require('./routes/cards'));
 
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(errors());
 app.use((err, req, res, next) => {
   const { statusCode = 500, message } = err;
   if (err) {

@@ -21,13 +21,6 @@ module.exports.createCard = async (req, res, next) => {
       name, link,
     } = req.body;
 
-    if (typeof name !== 'string' || name.length < 2 || name.length > 30) {
-      throw new BadRequestError('Поле "name" должно быть строкой с минимальной длинной 2 смвола и максимально 30');
-    }
-
-    if (typeof link !== 'string') {
-      throw new BadRequestError('Поле "Поле "link" должно быть строкой');
-    }
     const data = await card.create({
       name, link, owner: req.user._id,
     });
@@ -40,9 +33,6 @@ module.exports.createCard = async (req, res, next) => {
 
 module.exports.deleteCardById = async (req, res, next) => {
   try {
-    if (!isValidIbOjectId(req.params.cardId)) {
-      throw new BadRequestError('Передан неккоректный ID карточки');
-    }
     const userId = req.user._id;
     const cardData = await card.findOneAndRemove({ _id: req.params.cardId, owner: userId });
     if (cardData) {
@@ -82,13 +72,6 @@ module.exports.likeCard = async (req, res, next) => {
 
 module.exports.dislikeCard = async (req, res, next) => {
   try {
-    if (!isValidIbOjectId(req.params.cardId)) {
-      throw new BadRequestError('Передан неккоректный ID карточки');
-    }
-
-    if (!isValidIbOjectId(req.user._id)) {
-      throw new BadRequestError('Передан неккоректный ID карточки');
-    }
     const data = await card.findByIdAndUpdate(
       req.params.cardId,
       { $pull: { likes: req.user._id } }, // убрать _id из массива
