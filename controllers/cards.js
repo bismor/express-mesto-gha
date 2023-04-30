@@ -2,39 +2,30 @@
 const card = require('../models/card');
 const HTTP_STATUS_CODE = require('../utils/http-status-code');
 const { isValidIbOjectId } = require('../utils/utils');
+const BadRequestError = require('../errors/bad-request-err');
+const NotFoundError = require('../errors/not-found-err');
 
-module.exports.getCards = async (req, res) => {
+module.exports.getCards = async (req, res, next) => {
   try {
     const data = await card.find({});
     res.status(HTTP_STATUS_CODE.OK)
       .send({ data });
   } catch (error) {
-    res
-      .status(HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR)
-      .send({ message: 'На сервере произошла ошибка' });
+    next(error);
   }
 };
 
-module.exports.createCard = async (req, res) => {
+module.exports.createCard = async (req, res, next) => {
   const {
     name, link,
   } = req.body;
 
   if (typeof name !== 'string' || name.length < 2 || name.length > 30) {
-    res
-      .status(HTTP_STATUS_CODE.BAD_REQUEST)
-      .send({
-        message: 'Поле "name" должно быть строкой с минимальной длинной 2 смвола и максимально 30',
-      });
-    return;
+    next(new BadRequestError('Поле "name" должно быть строкой с минимальной длинной 2 смвола и максимально 30'));
   }
 
   if (typeof link !== 'string') {
-    res.status(HTTP_STATUS_CODE.BAD_REQUEST)
-      .send({
-        message: 'Поле "link" должно быть строкой',
-      });
-    return;
+    next(new BadRequestError('Поле "Поле "link" должно быть строкой'));
   }
   const data = await card.create({
     name, link, owner: req.user._id,
@@ -43,12 +34,9 @@ module.exports.createCard = async (req, res) => {
     .send({ data });
 };
 
-module.exports.deleteCardById = async (req, res) => {
+module.exports.deleteCardById = async (req, res, next) => {
   if (!isValidIbOjectId(req.params.cardId)) {
-    res
-      .status(HTTP_STATUS_CODE.BAD_REQUEST)
-      .send({ message: 'Передан неккоректный ID карточки' });
-    return;
+    next(new BadRequestError('Передан неккоректный ID карточки'));
   }
   const userId = req.user._id;
 
@@ -58,30 +46,19 @@ module.exports.deleteCardById = async (req, res) => {
       res.status(HTTP_STATUS_CODE.OK).send({ data: cardData });
       return;
     }
-    res
-      .status(HTTP_STATUS_CODE.NOT_FOUND)
-      .send({ message: 'Передан _id несуществующей карточки' });
-    return;
+    throw new NotFoundError('Передан _id несуществующей карточки');
   } catch (error) {
-    res
-      .status(HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR)
-      .send({ message: 'На сервере произошла ошибка' });
+    next(error);
   }
 };
 
-module.exports.likeCard = async (req, res) => {
+module.exports.likeCard = async (req, res, next) => {
   if (!isValidIbOjectId(req.params.cardId)) {
-    res
-      .status(HTTP_STATUS_CODE.BAD_REQUEST)
-      .send({ message: 'Передан неккоректный ID карточки' });
-    return;
+    next(new BadRequestError('Передан неккоректный ID карточки'));
   }
 
   if (!isValidIbOjectId(req.user._id)) {
-    res
-      .status(HTTP_STATUS_CODE.BAD_REQUEST)
-      .send({ message: 'Передан неккоректный ID пользователя' });
-    return;
+    next(new BadRequestError('Передан неккоректный ID пользователя'));
   }
 
   try {
@@ -92,34 +69,23 @@ module.exports.likeCard = async (req, res) => {
     );
 
     if (data === null) {
-      res
-        .status(HTTP_STATUS_CODE.NOT_FOUND)
-        .send({ message: 'Передан _id несуществующей карточки' });
-      return;
+      throw new NotFoundError('Передан _id несуществующей карточки');
     }
 
     res.status(HTTP_STATUS_CODE.OK)
       .send({ data });
   } catch (error) {
-    res
-      .status(HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR)
-      .send({ message: 'На сервере произошла ошибка' });
+    next(error);
   }
 };
 
-module.exports.dislikeCard = async (req, res) => {
+module.exports.dislikeCard = async (req, res, next) => {
   if (!isValidIbOjectId(req.params.cardId)) {
-    res
-      .status(HTTP_STATUS_CODE.BAD_REQUEST)
-      .send({ message: 'Передан неккоректный ID карточки' });
-    return;
+    next(new BadRequestError('Передан неккоректный ID карточки'));
   }
 
   if (!isValidIbOjectId(req.user._id)) {
-    res
-      .status(HTTP_STATUS_CODE.BAD_REQUEST)
-      .send({ message: 'Передан неккоректный ID пользователя' });
-    return;
+    next(new BadRequestError('Передан неккоректный ID карточки'));
   }
 
   try {
@@ -130,17 +96,12 @@ module.exports.dislikeCard = async (req, res) => {
     );
 
     if (data === null) {
-      res
-        .status(HTTP_STATUS_CODE.NOT_FOUND)
-        .send({ message: 'Передан _id несуществующей карточки' });
-      return;
+      throw new NotFoundError('Передан _id несуществующей карточки');
     }
 
     res.status(HTTP_STATUS_CODE.OK)
       .send({ data });
   } catch (error) {
-    res
-      .status(HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR)
-      .send({ message: 'На сервере произошла ошибка' });
+    next(error);
   }
 };
