@@ -5,6 +5,7 @@ const HTTP_STATUS_CODE = require('../utils/http-status-code');
 const { isValidIbOjectId } = require('../utils/utils');
 const BadRequestError = require('../errors/bad-request-err');
 const NotFoundError = require('../errors/not-found-err');
+const ConflictError = require('../errors/conflict-err');
 const UnauthorizedError = require('../errors/unauthorized-err');
 
 module.exports.getUsers = async (req, res, next) => {
@@ -41,9 +42,7 @@ module.exports.createUser = async (req, res, next) => {
   try {
     const userEmail = await user.findOne({ email });
     if (userEmail) {
-      res
-        .status(HTTP_STATUS_CODE.CONFLICT)
-        .send({ message: 'Такой email уже существует' });
+      throw new ConflictError('Такой email уже существует');
     }
 
     const data = await bcrypt.hash(req.body.password, 10).then((hash) => user.create({
