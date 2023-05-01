@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 const card = require('../models/card');
 const HTTP_STATUS_CODE = require('../utils/http-status-code');
+const NotFoundError = require('../errors/not-found-err');
 
 module.exports.getCards = async (req, res, next) => {
   try {
@@ -32,6 +33,11 @@ module.exports.deleteCardById = async (req, res, next) => {
   try {
     const userId = req.user._id;
     const cardData = await card.findOneAndRemove({ _id: req.params.cardId, owner: userId });
+
+    if (!cardData) {
+      throw new NotFoundError('карточка не найдена');
+    }
+
     if (cardData) {
       res.status(HTTP_STATUS_CODE.OK).send({ data: cardData });
     }
@@ -48,6 +54,10 @@ module.exports.likeCard = async (req, res, next) => {
       { new: true },
     );
 
+    if (!data) {
+      throw new NotFoundError('карточка не найдена');
+    }
+
     res.status(HTTP_STATUS_CODE.OK)
       .send({ data });
   } catch (error) {
@@ -62,6 +72,10 @@ module.exports.dislikeCard = async (req, res, next) => {
       { $pull: { likes: req.user._id } }, // убрать _id из массива
       { new: true },
     );
+
+    if (!data) {
+      throw new NotFoundError('карточка не найдена');
+    }
 
     res.status(HTTP_STATUS_CODE.OK)
       .send({ data });
