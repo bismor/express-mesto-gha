@@ -80,9 +80,6 @@ module.exports.updateAvatar = async (req, res, next) => {
   try {
     const { avatar } = req.body;
 
-    if (typeof avatar !== 'string') {
-      throw new BadRequestError('Поле "avatar" должно быть строкой');
-    }
     const data = await user.findByIdAndUpdate(req.user._id, { avatar }, { new: true });
     if (data === null) {
       throw new NotFoundError('Передан "_id" несуществующего пользователя');
