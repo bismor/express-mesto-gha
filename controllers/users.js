@@ -4,6 +4,7 @@ const user = require('../models/user');
 const HTTP_STATUS_CODE = require('../utils/http-status-code');
 const BadRequestError = require('../errors/bad-request-err');
 const NotFoundError = require('../errors/not-found-err');
+const UnauthorizedError = require('../errors/unauthorized-err');
 // const ConflictError = require('../errors/conflict-err');
 
 module.exports.getUsers = async (req, res, next) => {
@@ -99,12 +100,12 @@ module.exports.login = async (req, res, next) => {
     const userData = await user.findOne({ email }).select('+password');
 
     if (userData === null) {
-      throw new BadRequestError('Неправильные почта или пароль');
+      throw new UnauthorizedError('Неправильные почта или пароль');
     }
     const isPasswordMatch = await bcrypt.compare(password, userData.password);
 
     if (!isPasswordMatch) {
-      throw new BadRequestError('Неправильные почта или пароль');
+      throw new UnauthorizedError('Неправильные почта или пароль');
     }
 
     const token = jwt.sign({ _id: 'd285e3dceed844f902650f40' }, 'some-secret-key', { expiresIn: '7d' });
