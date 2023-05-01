@@ -9,8 +9,8 @@ const {
 router.get('/me', auth, getProfile);
 router.patch('/me', auth, celebrate({
   body: Joi.object().keys({
-    name: Joi.string().min(2).max(30),
-    about: Joi.string().min(2).max(30),
+    name: Joi.required().string().min(2).max(30),
+    about: Joi.required().string().min(2).max(30),
   }),
 }), updateProfile);
 router.patch('/me/avatar', auth, celebrate({
