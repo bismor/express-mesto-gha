@@ -4,7 +4,8 @@ const bodyParser = require('body-parser');
 const { errors } = require('celebrate');
 const { celebrate, Joi } = require('celebrate');
 const auth = require('./middlewares/auth');
-const HTTP_STATUS_CODE = require('./utils/http-status-code');
+const NotFoundError = require('./errors/not-found-err');
+const ConflictError = require('./errors/conflict-err');
 const {
   createUser, login,
 } = require('./controllers/users');
@@ -36,25 +37,24 @@ app.post('/signup', celebrate({
 app.use('/users', require('./routes/users'));
 app.use('/cards', auth, require('./routes/cards'));
 
-app.use((req, res) => {
-  res.status(HTTP_STATUS_CODE.NOT_FOUND).send({ message: 'Not Found' });
+app.use((req, res, next) => {
+  next(new NotFoundError('Передан "userId" несуществующего пользователя'));
 });
 app.use(errors());
 app.use((err, req, res, next) => {
   const { statusCode = 500, message } = err;
   if (err.code === 11000) {
-    res.status(HTTP_STATUS_CODE.CONFLICT).send({ message: 'Такой email уже существует' });
+    next(new ConflictError('Такой email уже существует'));
   }
-  if (err) {
-    res
-      .status(statusCode)
-      .send({
-        // проверяем статус и выставляем сообщение в зависимости от него
-        message: statusCode === 500
-          ? 'На сервере произошла ошибка'
-          : message,
-      });
-  } else { next(); }
+
+  res
+    .status(statusCode)
+    .send({
+      // проверяем статус и выставляем сообщение в зависимости от него
+      message: statusCode === 500
+        ? 'На сервере произошла ошибка'
+        : message,
+    });
 });
 
 app.listen(3000);
