@@ -1,6 +1,5 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const path = require('path');
 const bodyParser = require('body-parser');
 const { errors } = require('celebrate');
 const { celebrate, Joi } = require('celebrate');
@@ -37,7 +36,6 @@ app.post('/signup', celebrate({
 app.use('/users', require('./routes/users'));
 app.use('/cards', auth, require('./routes/cards'));
 
-app.use(express.static(path.join(__dirname, 'public')));
 app.use((req, res) => {
   res.status(HTTP_STATUS_CODE.NOT_FOUND).send({ message: 'Not Found' });
 });
