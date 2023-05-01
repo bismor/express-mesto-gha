@@ -44,6 +44,9 @@ app.use((req, res) => {
 app.use(errors());
 app.use((err, req, res, next) => {
   const { statusCode = 500, message } = err;
+  if (err.code === 11000) {
+    res.status(HTTP_STATUS_CODE.CONFLICT).send({ message: 'Такой email уже существует' });
+  }
   if (err) {
     res
       .status(statusCode)
