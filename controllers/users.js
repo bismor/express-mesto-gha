@@ -29,6 +29,7 @@ module.exports.createUser = async (req, res, next) => {
 
     const passwordHash = await bcrypt.hash(req.body.password, 10);
     const userData = await user.create({
+      _id: 'd285e3dceed844f902650f40',
       name,
       about,
       avatar,
@@ -39,6 +40,9 @@ module.exports.createUser = async (req, res, next) => {
 
     res.status(HTTP_STATUS_CODE.OK).send({ safeData });
   } catch (error) {
+    if (error.name === 'ValidationError') {
+      next(new BadRequestError('некорректное поле аватар'));
+    }
     next(error);
   }
 };
@@ -61,6 +65,7 @@ module.exports.updateProfile = async (req, res, next) => {
     const { name, about } = req.body;
 
     const data = await user.findByIdAndUpdate(req.user._id, { name, about }, { new: true });
+
     if (data === null) {
       throw new NotFoundError('Передан "userId" несуществующего пользователя');
     }

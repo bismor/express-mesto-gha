@@ -26,7 +26,7 @@ const userSchema = new mongoose.Schema(
         validator(v) {
           return httpRegex.test(v);
         },
-        message: (props) => `${props.value} должно быть ссылкой`,
+        message: (props) => `${props.value} поле аватар должно быть ссылкой.`,
       },
     },
     email: {
