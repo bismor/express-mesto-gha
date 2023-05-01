@@ -97,9 +97,13 @@ module.exports.login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
     const userData = await user.findOne({ email }).select('+password');
+
+    if (userData === null) {
+      throw new BadRequestError('Неправильные почта или пароль');
+    }
     const isPasswordMatch = await bcrypt.compare(password, userData.password);
 
-    if (!isPasswordMatch || !userData) {
+    if (!isPasswordMatch) {
       throw new BadRequestError('Неправильные почта или пароль');
     }
 
