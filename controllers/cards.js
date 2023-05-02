@@ -54,7 +54,7 @@ module.exports.likeCard = async (req, res, next) => {
       req.params.cardId,
       { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
       { new: true },
-    ).populate('owner');
+    ).populate('likes');
 
     if (!data) {
       throw new NotFoundError('карточка не найдена');
@@ -73,7 +73,7 @@ module.exports.dislikeCard = async (req, res, next) => {
       req.params.cardId,
       { $pull: { likes: req.user._id } }, // убрать _id из массива
       { new: true },
-    ).populate('owner');
+    ).populate('likes');
 
     if (!data) {
       throw new NotFoundError('карточка не найдена');
