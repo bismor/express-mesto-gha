@@ -42,8 +42,7 @@ module.exports.createUser = async (req, res, next) => {
   } catch (error) {
     if (error.name === 'ValidationError') {
       next(new BadRequestError('некорректное поле аватар'));
-    }
-    next(error);
+    } else next(error);
   }
 };
 
@@ -64,7 +63,11 @@ module.exports.updateProfile = async (req, res, next) => {
   try {
     const { name, about } = req.body;
 
-    const data = await user.findByIdAndUpdate(req.user._id, { name, about }, { new: true });
+    const data = await user.findByIdAndUpdate(
+      req.user._id,
+      { name, about },
+      { new: true, runValidators: true },
+    );
 
     if (data === null) {
       throw new NotFoundError('Передан "userId" несуществующего пользователя');
@@ -80,7 +83,12 @@ module.exports.updateAvatar = async (req, res, next) => {
   try {
     const { avatar } = req.body;
 
-    const data = await user.findByIdAndUpdate(req.user._id, { avatar }, { new: true });
+    const data = await user.findByIdAndUpdate(
+      req.user._id,
+      { avatar },
+
+      { new: true, runValidators: true },
+    );
     if (data === null) {
       throw new NotFoundError('Передан "_id" несуществующего пользователя');
     }
@@ -104,8 +112,7 @@ module.exports.login = async (req, res, next) => {
     if (!isPasswordMatch) {
       throw new UnauthorizedError('Неправильные почта или пароль');
     }
-
-    const token = jwt.sign({ _id: 'd285e3dceed844f902650f40' }, 'some-secret-key', { expiresIn: '7d' });
+    const token = jwt.sign({ _id: userData._id }, 'some-secret-key', { expiresIn: '7d' });
 
     res.status(HTTP_STATUS_CODE.OK).send({ token });
   } catch (error) {
@@ -117,6 +124,7 @@ module.exports.getProfile = async (req, res, next) => {
   try {
     const userId = req.user._id;
     const data = await user.findById(userId);
+
     if (data === null) {
       throw new NotFoundError('Передан "userId" несуществующего пользователя');
     }

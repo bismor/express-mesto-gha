@@ -5,7 +5,7 @@ const NotFoundError = require('../errors/not-found-err');
 
 module.exports.getCards = async (req, res, next) => {
   try {
-    const data = await card.find({});
+    const data = await card.find({}).populate('owner');
     res.status(HTTP_STATUS_CODE.OK)
       .send({ data });
   } catch (error) {
@@ -21,7 +21,7 @@ module.exports.createCard = async (req, res, next) => {
 
     const data = await card.create({
       name, link, owner: req.user._id,
-    });
+    }).populate('owner');
     res.status(HTTP_STATUS_CODE.OK)
       .send({ data });
   } catch (error) {
@@ -32,7 +32,9 @@ module.exports.createCard = async (req, res, next) => {
 module.exports.deleteCardById = async (req, res, next) => {
   try {
     const userId = req.user._id;
-    const cardData = await card.findOneAndRemove({ _id: req.params.cardId, owner: userId });
+    // на этой строчке мы ищем карточку по ID карточки и userID пользователя.
+    // Ситуации при которой у чужой карточки будет userID чужого пользователя невозможна
+    const cardData = await card.findOneAndRemove({ _id: req.params.cardId, owner: userId }).populate('owner');
 
     if (!cardData) {
       throw new NotFoundError('карточка не найдена');
@@ -52,7 +54,7 @@ module.exports.likeCard = async (req, res, next) => {
       req.params.cardId,
       { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
       { new: true },
-    );
+    ).populate('owner');
 
     if (!data) {
       throw new NotFoundError('карточка не найдена');
@@ -71,7 +73,7 @@ module.exports.dislikeCard = async (req, res, next) => {
       req.params.cardId,
       { $pull: { likes: req.user._id } }, // убрать _id из массива
       { new: true },
-    );
+    ).populate('owner');
 
     if (!data) {
       throw new NotFoundError('карточка не найдена');

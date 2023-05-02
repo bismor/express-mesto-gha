@@ -44,10 +44,10 @@ app.use(errors());
 app.use((err, req, res, next) => {
   const { statusCode = 500, message } = err;
   if (err.code === 11000) {
-    next(new ConflictError('Такой email уже существует'));
+    return next(new ConflictError('Такой email уже существует'));
   }
 
-  res
+  return res
     .status(statusCode)
     .send({
       // проверяем статус и выставляем сообщение в зависимости от него
