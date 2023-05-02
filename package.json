@@ -3,8 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^13.5.0",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.2",
     "celebrate": "^15.0.1",
@@ -18,12 +16,6 @@
     "start": "node ./app.js",
     "lint": "npx eslint ./",
     "dev": "nodemon ./app.js"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
   },
   "devDependencies": {
     "eslint": "^8.38.0",
