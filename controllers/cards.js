@@ -37,7 +37,7 @@ module.exports.deleteCardById = async (req, res, next) => {
     const cardData = await card.findOneAndRemove({ _id: req.params.cardId, owner: userId }).populate('owner');
 
     if (!cardData) {
-      throw new NotFoundError('карточка не найдена');
+      throw new NotFoundError('Карточка с таким ID не найдена у пользователя с таким ID');
     }
 
     if (cardData) {
